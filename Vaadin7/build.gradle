@@ -1,0 +1,115 @@
+/*
+ * 
+ * build script
+ */
+apply plugin:'java'
+apply plugin:'war'
+apply plugin:'jetty'
+webAppDirName='WebContent'
+sourceSets.main.java.srcDirs{
+	 'src'
+}
+configurations {
+	compileWidgetset
+}
+repositories{
+	mavenCentral()
+}
+dependencies{
+	compile "com.vaadin:vaadin-shared:7.0.1"
+	compile "com.vaadin:vaadin-server:7.0.1"
+	compile "com.vaadin:vaadin-client:7.0.1"
+	compile "com.vaadin:vaadin-client-compiler:7.0.1"
+	compile "com.vaadin:vaadin-client-compiled:7.0.1"
+	compile "com.vaadin:vaadin-theme-compiler:7.0.1"
+	compile "com.google.gwt:gwt-user:2.3.0"
+	compile "com.google.gwt:gwt-dev:2.3.0"
+	compileWidgetset "javax.validation:validation-api:1.0.0.GA:sources"
+}
+task compileWidgetset << {
+	ant.java(classname:'com.google.gwt.dev.Compiler', failOnError: 'true', fork: 'true')
+	{
+		jvmarg(value: '-Xss1024k')
+		arg(line: '-logLevel INFO')
+		arg(line: '-war WebContent/VAADIN/widgetsets')
+		arg(value: 'com.example.vaadin7.widgets.Vaadin7Widgetset')
+		classpath {
+			pathElement(location: 'src')
+			pathElement(path: configurations.compile.asPath)
+			pathElement(path: configurations.compileWidgetset.asPath)
+		}
+	}
+}
+war {
+	dependsOn compileWidgetset
+	archiveName = archivesBaseName + '.war'
+}
+//end here
+/*apply plugin:'war'
+allprojects {
+	apply plugin: 'eclipse-wtp'
+
+	group = 'com.ajr.vaadin'
+	version = '0.0.1'
+}
+
+
+subprojects {
+	apply plugin: 'java'
+	archivesBaseName = 'vaadin7'
+	sharedManifest = manifest {
+		attributes 'Implementation-Title': 'VaadinImpl'
+		attributes 'Implementation-Version': version
+		attributes 'Implementation-Vendor': 'AJR2 Tech Ltd'
+		attributes 'Vaadin-Package-Version': '1'
+		attributes 'Vaadin-License-Title': 'Apache License 2.0'
+		//GWT XML file without extension .gwt.xml
+		attributes 'Vaadin-Widgetsets': 'com.example.vaadin7.widgets.Vaadin7Widgetset'
+	}
+
+	configurations {
+		provided
+		vaadinDependency
+		compileWidgetset
+	}
+
+	repositories {
+		mavenCentral()
+		mavenRepo(urls: 'http://maven.vaadin.com/vaadin-addons')
+	}
+
+	sourceSets {
+		main { compileClasspath += configurations.provided }
+	}
+
+	eclipse {
+		classpath { plusConfigurations += configurations.provided }
+	}
+}
+
+project(':Vaadin7') {
+	apply plugin: 'war'
+	apply plugin: 'jetty'
+
+	task compileWidgetset << {
+		ant.java(classname:'com.google.gwt.dev.Compiler', failOnError: 'true', fork: 'true')
+		{
+			jvmarg(value: '-Xss1024k')
+			arg(line: '-logLevel INFO')
+			arg(line: '-war src/main/webapp/VAADIN/widgetsets')
+			arg(value: 'com.example.vaadin7.widgets.Vaadin7Widgetset')
+			classpath {
+				pathElement(location: 'src/main/resources')
+				pathElement(path: configurations.compile.asPath)
+				pathElement(path: configurations.compileWidgetset.asPath)
+				pathElement(path: configurations.provided.asPath)
+			}
+		}
+	}
+
+	war {
+		dependsOn compileWidgetset
+		archiveName = archivesBaseName + '.war'
+	}
+}
+*/
